@@ -1,57 +1,45 @@
 import java.util.*;
 import java.io.*;
-public class Main {
 
+public class Main {
 	public static void main (String [] args){
-		//Constants used for calculating current depth, and how many puzzles to solve
-		final int END = 1;
+		final int END = 100;
 		final int MIN_DEPTH = 2;
 		final int MAX_DEPTH = 2;
-		
-		Puzzle solvedPuzzle = new Puzzle();
-		Puzzle puzzle = new Puzzle();
-		
-		File file = new File("Puzzles.txt");
-		
-		//Create Search object to search puzzles
+
+		Puzzle puzzleToSolveMan = new Puzzle();
+		Puzzle puzzleToSolveMisplaced;
+		Puzzle goalPuzzle = new Puzzle();
+
+		File file = new File("myPuzzles.txt");
 		Search aStar = new Search();
-		
-		//Generate Puzzles to solve
-		
-		
-		//Solve Puzzles according to depth and print results
+
 		for (int n = MIN_DEPTH; n <= MAX_DEPTH; n+=2){
 			int nodesGenMan = 0, nodesGenMisp = 0;
-			for (int i = 0; i < END; i++){
-				
-				//shuffle puzzle using n steps
-				puzzle.shuffle(n);
-				System.out.println("Shuffled Puzzle\n" + puzzle);
-				//create save to use puzzle with both heurisitcs
-				puzzle.savePuzzle();
-				//System.out.println("saved puzzle"+puzzle);
-				
-				//solve with manhattan heuristic
-				//puzzle.setHeuristic(true);
-				System.out.println(aStar.solve(puzzle, solvedPuzzle));
-				nodesGenMan += aStar.getNodeTotal();
+			for(int i = 0; i < END; i++){
+				puzzleToSolveMan.shuffle(n);
+				//System.out.println("SHUFFLED");
+				//System.out.println(puzzleToSolveMan);
+				//create the same puzzle to be used with the misplaced heuristic
+				puzzleToSolveMisplaced = puzzleToSolveMan.dupe();
 
-				//reset puzzle
-				puzzle.restorePuzzle();
-				//System.out.println("restored Puzzle"+puzzle);
+				//Solve with manhattan heurisitc
+				puzzleToSolveMan.setHeuristic(true);
+				//System.out.println(puzzleToSolveMan.calculateManhattanHeuristic());
+				//aStar.solve(puzzleToSolveMan, goalPuzzle);
 				
-				
-				//Solve with misplaced
-				
-				puzzle.setHeuristic(false);
-				aStar.solve(puzzle, solvedPuzzle);
-				//System.out.println(aStar.solve(puzzle, solvedPuzzle));
-				nodesGenMisp += aStar.getNodeTotal();
-				//System.out.println("DONE2");
-				
+				System.out.println(aStar.solve(puzzleToSolveMan, goalPuzzle));
+				nodesGenMan = aStar.getNodeTotal();
+				System.out.println("NODE TOTAL" + aStar.getNodeTotal());
+				//nodesGenMan += (aStar.getNodeTotal());
+
+				//Solve with misplaced heuristic
+				puzzleToSolveMisplaced.setHeuristic(false);
+				aStar.solve(puzzleToSolveMisplaced, goalPuzzle);
+				//System.out.println(aStar.getNodeTotal());
+				nodesGenMisp = (aStar.getNodeTotal());
 			}
-				//Display data after completetion of 100 nodes at n depth
-				System.out.println("Puzzle Depth: " + n + " \tManhattan Node Average: " + nodesGenMan / END + "\t Misplaced Node Average: " + nodesGenMisp / END);
+			System.out.println("Puzzle Depth: " + n + " \tManhattan Node Average: " + (nodesGenMan / END) + "\t Misplaced Node Average: " + nodesGenMisp /END);
 		}
 	}
 }
