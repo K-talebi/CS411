@@ -1,60 +1,91 @@
-private final static  int PUZZLE_SIZE = 9;
-	//save is used to solve the puzzle using both heuristics
+import java.util.*;
+public class Puzzle implements Comparable<Puzzle> {
 	private Tile [] puzzle;
-	private Tile [] save;
-	private int currentCost, costToFinish;
-	private boolean isManhattan;
-	//used to keep track of which pieces can move
+	boolean isManhattan;
 	private int movablePiece;
+	private int currentCost;
+	private int costToFinish;
+	private int storeLastMove;
 	private Puzzle parent;
-	private int storeLastMove = 0;
 	
-	//The Goal Puzzle
-	public Puzzle() {
-		puzzle = new Tile[PUZZLE_SIZE];
-		
-		for (int i =0; i < PUZZLE_SIZE; i++){
-			puzzle[i] = new Tile (i,i);
+	//Create a solved puzzle
+	public Puzzle(){
+		puzzle = new Tile[9];
+		for(int i = 0 ; i < 9; i++){
+			puzzle [i] = new Tile(i,i);
 		}
-		currentCost = 0;
-		costToFinish = calculateCostToFinish();
 		movablePiece = 0;
-		parent = null;
+		calculateCostToFinish();
 	}
 	
-	public Puzzle (Tile [] puzzle){
-		this.puzzle = new Tile[PUZZLE_SIZE];
-		System.arraycopy(puzzle, 0, this.puzzle, 0, puzzle.length);
+	//create a dupe of the parent for going down tree
+	public Puzzle(Puzzle parent){
+		puzzle = new Tile[9];
+		Tile[] parentPuzzle = parent.getTileArray();
+		for(int i =  0; i < 9; i++) {
+			puzzle[i] = new Tile(parentPuzzle[i].getValue(), parentPuzzle[i].getPosition());
+		}
+		this.parent = parent;
+		currentCost = parent.getCurrentCost();
+		costToFinish = parent.calculateCostToFinish();
+		this.movablePiece = parent.getMovablePiece();
+		this.isManhattan = parent.getHeuristic();
 	}
 	
-	public void savePuzzle(){
-			save = new Tile [9];
-		System.arraycopy(puzzle, 0, save, 0, puzzle.length);
+	public Puzzle(Tile [] dupedTiles){
+		this.puzzle = new Tile[9];
+		for (int i = 0; i < 9; i++) {
+			Tile tile = dupedTiles[i];
+			this.puzzle[i] = new Tile(tile.getValue(), tile.getPosition());
+		}
 	}
 	
-	public void restorePuzzle(){
-		System.arraycopy(save, 0, puzzle, 0, save.length);
+	//create an array du
+	public Puzzle dupe(){
+		Puzzle dupedPuzzle;
+		return dupedPuzzle = new Puzzle(this.getTileArray());
+		
 	}
 	
-	public int getCurrentCost(){
-		return currentCost;
+	private void setMovablePiece(int movablePiece){
+		this.movablePiece = movablePiece;
 	}
 	
-	public int getCostToFinish(){
-		return costToFinish;
+	public int getMovablePiece(){
+		this.movablePiece = this.findMovablePiece();
+		return this.movablePiece;
 	}
 	
-	public boolean getHeurisitc(){
-		return isManhattan;
+	public int findMovablePiece() {
+		Tile [] test = this.getTileArray();
+		int movePos = 0;
+		for(int i = 0 ; i < 9; i ++){
+			if(test[i].getValue() == 0){
+				movePos = test[i].getPosition();
+			}
+		}
+		return movePos;
 	}
-	
+
 	public void setHeuristic(boolean isManhattan){
 		this.isManhattan = isManhattan;
 	}
 	
-	//check which heuristic is currently being used, then calculate the cost according to that heuristic
+	public boolean getHeuristic(){
+		return this.isManhattan;
+	}
+	
+	public boolean isManhattan(){
+		return this.isManhattan;
+	}
+	
+	public Tile [] getTileArray(){
+		return puzzle;
+	}
+	
+	//Cost calculations
 	public int calculateCostToFinish(){
-		if (isManhattan){
+		if(isManhattan){
 			return calculateManhattanHeuristic();
 		}
 		else{
@@ -62,36 +93,62 @@ private final static  int PUZZLE_SIZE = 9;
 		}
 	}
 	
-	private int calculateManhattanHeuristic(){
+	public int calculateManhattanHeuristic(){
 		int cost = 0;
-		for(int i = 0; i < puzzle.length; i++){
-			cost += puzzle[i].getManhattanDistance();
-		}
-		return cost;
-	}
-	
-	private int calculateMisplacedHeuristic(){
-		int cost = 0;
-		for(int i = 0; i < puzzle.length; i++){
-			if (!puzzle[i].isProperPosition() && puzzle[i].getValue() != 0){
-				cost ++;
+		for(int i = 0; i < 9; i++){
+			if(puzzle[i].getValue()!= 0){
+				cost += puzzle[i].calculateManhattanDistance();
 			}
 		}
 		return cost;
 	}
 	
-	//starts a puzzle solved, and shuffle it randomly 
-	//so that it can be solved in k moves or less
+	public int calculateMisplacedHeuristic(){
+		int cost = 0;
+		for ( int i = 0; i < 9; i++){
+			if(puzzle[i].isInPosition()){
+			//do nothing, this is good	
+				//cost++;
+			}
+			else{
+				cost++;
+			}
+		}
+		return cost;
+	}
+	
+	public int getCurrentCost(){
+		return currentCost;
+	}
+	
+	public int getCostToFinish(){
+		costToFinish = calculateCostToFinish();
+		return costToFinish;
+	}
+	
+	public boolean equals(Object obj) {
+        if (obj.getClass() != this.getClass()) return false;
+
+        boolean eq = true;
+
+        Tile[] objPuz = ((Puzzle) obj).getTileArray();
+        for (int i = 0; i < this.puzzle.length && eq; i++) {
+            if (!this.puzzle[i].equals(objPuz[i])) eq = false;
+        }
+
+        return eq;
+    }
+	
+	//Functions to shuffle puzzle and switch tiles
 	public void shuffle(int k){
 		//Used when randomizing puzzles so that a move is not directly countered
 		Random rng = new Random();
 		for (int i = 0 ; i < k; i++){
 			int random = rng.nextInt(4);
 			while(random == storeLastMove){
-				
 				random = rng.nextInt(4);
 			}
-			
+
 			switch(random){
 			case 0:
 				storeLastMove = 1;
@@ -116,137 +173,133 @@ private final static  int PUZZLE_SIZE = 9;
 		}
 		currentCost = 0;
 	}
-	
-	private void switchTiles(int p1, int p2){
-		Tile temp = puzzle[p1];
-		puzzle[p1] = puzzle[p2];
-		puzzle[p2] = temp;
-		
-		puzzle[p1].setPosition(p2);
-		puzzle[p2].setPosition(p1);
-		
-		//check for the movable piece
-		if (puzzle[p1].getValue() == 0){
-			movablePiece = p1;
-		}
-		//If the first tile was not the 0 value, it must be the 2nd!
-		else{
-			movablePiece = p2;
-		}
-		//update cost and the heuristic cost to finish
-		costToFinish = calculateCostToFinish();
-		currentCost ++;
-	}
-	
-	//checks if the movable tile can be moved in the direction.
-	//if it can, call switchTiles.
-	public void moveUp(){
-		if(canMoveUp()){
-			switchTiles(movablePiece, movablePiece - 3);
-		}
-	}
-	
-	public void moveDown(){
-		if (canMoveDown()){
-			switchTiles(movablePiece, movablePiece + 3);
-		}
-	}
-	
-	public void moveLeft(){
-		if (canMoveLeft()){
-			switchTiles(movablePiece, movablePiece-1);
-		}
-	}
-	
-	public void moveRight(){
-		if (canMoveRight()){
-			switchTiles(movablePiece, movablePiece + 1);
-		}
-	}
-	
-	//Methods used to check if the 0 tile can move I.E. can't move up if in the top 3 spots.
-	public boolean canMoveUp(){
-		if(movablePiece != 0 && movablePiece != 1  && movablePiece !=2 ){
-			return true;
-		}
-		else{
-			return false;
-		}
-	}
-	
-	public boolean canMoveDown(){
-		if(movablePiece != 6 && movablePiece != 7 && movablePiece != 8){
-			return true;
-		}
-		else{
-			return false;
-		}
-	}
-	
-	public boolean canMoveLeft(){
-		if (movablePiece != 0 && movablePiece != 3 && movablePiece != 6){
-			return true;
-		}
-		else{
-			return false;
-		}
-	}
-	
-	public boolean canMoveRight(){
-		if (movablePiece != 2 && movablePiece != 5 && movablePiece != 8 ){
-			return true;
-		}
-		else{
-			return false;
-		}
-	}
-	
-	//Used to compare puzzles
-	public Tile[] getArray(){
-		return puzzle;
-	}
-	
-	//compares arrays of 2 tile arrays I.E. Puzzles
-	public boolean equals(Object o){
-		boolean equal = true;
-		Tile[] puzzleObj = ((Puzzle) o).getArray();
-		for(int i = 0 ; i < PUZZLE_SIZE;i++){
-			if(puzzleObj[i].getValue() != puzzle[i].getValue()){
-				equal = false;
+
+	private void switchTiles(int tile1, int tile2){
+//		System.out.println(tile1 + " " + tile2);
+		if((puzzle[tile1].getValue() == 0) || (puzzle[tile2].getValue() == 0)){
+//			System.out.println("before " + this);
+			puzzle[tile1].setPosition(tile2);
+			puzzle[tile2].setPosition(tile1);
+			
+			Tile temp = puzzle[tile1];
+			puzzle[tile1] = puzzle[tile2];
+			puzzle[tile2] = temp;
+
+//			System.out.println("after " + this);
+			
+//			int positionTemp = puzzle[tile1].getPosition();
+//			puzzle[tile1].setPosition(puzzle[tile2].getPosition());
+//			puzzle[tile2].setPosition(positionTemp);
+
+			//find which tile was the movablePiece
+			if(puzzle[tile1].getValue() == 0){
+				movablePiece = puzzle[tile1].getPosition();
 			}
+			else if(puzzle[tile2].getValue() == 0){
+//				this.setMovablePiece(puzzle[tile2].getPosition());
+				movablePiece = puzzle[tile2].getPosition();
+			}
+			else{
+				System.out.println("ERROR! movable piece is lost.");
+			}
+			//update cost and the heuristic cost to finish
+			currentCost++;
+			//in search always call getCostToFinish();
+			this.calculateCostToFinish();
 		}
-		return equal;
-	}
-	
-	//Used to create children nodes that are linked to the parent, that have the same tile layout as parent
-	public Puzzle(Puzzle parent){
-		puzzle = new Tile[PUZZLE_SIZE];
-		System.arraycopy(parent.getTileArray(), 0, puzzle, 0, puzzle.length);
-		this.parent = parent;
-		currentCost = parent.getCurrentCost();
-		costToFinish = parent.calculateCostToFinish();
-		movablePiece = parent.getMovablePiece();
-		this.isManhattan = parent.getHeurisitc();
-	}
-	
-	//Used to tell child which piece can be moved
-	public int getMovablePiece(){
-		return movablePiece;
-	}
-	
-	//Made so i can copy tiles from parent puzzle to child puzzle
-	public Tile [] getTileArray(){
-		return puzzle;
+		else{
+//			System.out.println("HOW");
+		}
 	}
 	
 	public String toString() {
-        String result = "";
+		String result = "";
 
-        for (int i = 0; i < puzzle.length; i++) {
-            result += puzzle[i] + " ";
-            if (i % 3 == 2 && i != 8) {
-                result += "\n";
-            }
-        }
+		for (int i = 0; i < puzzle.length; i++) {
+			result += puzzle[i] + " ";
+			if (i % 3 == 2 && i != 8) {
+				result += "\n";
+			}
+		}
 		return result;
 	}
+	//movement functions
+		//checks if the movable tile can be moved in the direction.
+		//if it can, call switchTiles.
+		public void moveUp(){
+			getMovablePiece();
+			if(canMoveUp()){
+				switchTiles(movablePiece, movablePiece - 3);
+			}
+		}
+
+		public void moveDown(){
+			getMovablePiece();
+			if (canMoveDown()){
+				switchTiles(movablePiece, movablePiece + 3);
+			}
+		}
+
+		public void moveLeft(){
+			getMovablePiece();
+			if (canMoveLeft()){
+				switchTiles(movablePiece, movablePiece-1);
+			}
+		}
+
+		public void moveRight(){
+			getMovablePiece();
+			if (canMoveRight()){
+				switchTiles(movablePiece, movablePiece + 1);
+			}
+		}
+
+		//Methods used to check if the 0 tile can move I.E. can't move up if in the top 3 spots.
+		public boolean canMoveUp(){
+			if(movablePiece != 0 && movablePiece != 1  && movablePiece !=2 ){
+				return true;
+			}
+			else{
+				return false;
+			}
+		}
+
+		public boolean canMoveDown(){
+			if(movablePiece != 6 && movablePiece != 7 && movablePiece != 8){
+				return true;
+			}
+			else{
+				return false;
+			}
+		}
+
+		public boolean canMoveLeft(){
+			if (movablePiece != 0 && movablePiece != 3 && movablePiece != 6){
+				return true;
+			}
+			else{
+				return false;
+			}
+		}
+
+		public boolean canMoveRight(){
+			if (movablePiece != 2 && movablePiece != 5 && movablePiece != 8 ){
+				return true;
+			}
+			else{
+				return false;
+			}
+		}
+
+		@Override
+		public int compareTo(Puzzle arg0) {
+			if(this.equals(arg0)){
+				return 0;	
+			}else if(this.getCostToFinish() > arg0.getCostToFinish()){
+				return 1;
+			}
+			else{
+				return -1;
+			}
+		}
+}
