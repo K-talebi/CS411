@@ -35,7 +35,7 @@ public class Board {
 				if (placeQueen(col, row)){
 					placed = true;
 				}
-				System.out.println(row +"    "+ col);
+				//System.out.println(row +"    "+ col);
 			}
 		}
 	}
