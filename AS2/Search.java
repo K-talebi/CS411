@@ -3,6 +3,7 @@ import java.util.*;
 public class Search {
 
 	private int nodeCounter = 0;
+	private int temperature;
 	
 	public Board randomRestart(Board board){
 		Board b = new Board(board);
@@ -116,14 +117,68 @@ public class Search {
 	}
 	
 	public Board simulatedAnnealing(Board initial){
-		Board solution;
+		Board current = new Board(initial);
+		Board neighbor;
+		double temp = 2000;
+		int t = 0;
+		double deltaE;
+		double acceptedProbability;
+		double probability;
+		double coolingRate = .66;
 		
-		
-		return solution;
+		while(true){
+			//temp = getTemp(t);
+			if(temp == 0 || current.getHeuristic() == 0){
+				System.out.println("WHY ARENT YOU HAPPENING PROPERLY");
+				return current;
+			}
+			neighbor = getRandomNeighbor(current);
+			deltaE = neighbor.getHeuristic() - current.getHeuristic();
+			if(deltaE <= 0){
+				current = neighbor;
+			}
+			else{
+				acceptedProbability = Math.exp((-deltaE)
+						/temp);
+				probability = Math.random();
+				
+				//System.out.println("probability: "+probability+ "\tACEPTED PROB:"+ acceptedProbability+ "\ttemp: " + temp );
+				if(acceptedProbability > probability){
+					current = neighbor;
+					t++;
+				}
+				//current = neighbor only with probability e^ deltaE/T 
+			}
+			temp = temp * .66 ;
+		}
 	}
 	
-	public double getSchedule(int temp){
+	public double getTemp(int t){
+		double coolingRate = 0.003;
+		return (20 - ((double)t/20));
+	}
+	
+	public Board getRandomNeighbor(Board b){
+		Random random = new Random();
+		ArrayList<Board> possibleNeighbors = new ArrayList<>();
+		Board testBoard = new Board(b);
+		Queen[] queenList = testBoard.getListOfQueens();
+		int original;
 		
+		for(int i = 0; i < queenList.length; i ++){
+			for(int n = 0; n<Board.BOARD_SIZE; n++){
+				original = queenList[i].getY();
+				if(n != original){
+					testBoard.removeQueen(i, queenList[i].getY());
+					testBoard.placeQueen(i, n);
+					nodeCounter++;
+					possibleNeighbors.add(new Board(testBoard));
+				}
+			}
+			testBoard = new Board(b);
+			queenList = testBoard.getListOfQueens();
+		}
+		return possibleNeighbors.get(random.nextInt(possibleNeighbors.size()));
 	}
 	
 	public int getNodeCounter(){
