@@ -6,7 +6,7 @@ public class Search {
 	
 	public Board randomRestart(Board board){
 		Board b = new Board(board);
-		
+		b.shuffleBoard();
 		while(true){
 			if(b.getHeuristic() == 0){
 				return b;
@@ -14,15 +14,17 @@ public class Search {
 			else{
 				b.shuffleBoard();
 				b = hillClimbing(b);
+				//System.out.println("RESET BOARD");
 			}
 		}
 	}
 	
 	public Board hillClimbing(Board initial){
-		nodeCounter = 0;
+		//nodeCounter = 0;
 		Board neighbor;
 		Board current = new Board(initial);
 		//System.out.println(current);
+		
 		//used to set whether to sidestep or not
 		int sideSteps = 0;
 
@@ -113,12 +115,19 @@ public class Search {
 		 */
 	}
 	
+	public Board simulatedAnnealing(Board initial){
+		Board solution;
+		
+		
+		return solution;
+	}
+	
+	public double getSchedule(int temp){
+		
+	}
+	
 	public int getNodeCounter(){
 		return nodeCounter;
 	}
 
-	public Board randomRestart() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }
