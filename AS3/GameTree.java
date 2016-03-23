@@ -4,6 +4,7 @@ public class GameTree {
 	private int data;
 	private GameTree parent;
 	private GameTree[] childList = new GameTree[MAX_CHILDREN];
+	private String alias;
 	
 	public GameTree(){
 		data = 0;
@@ -73,6 +74,14 @@ public class GameTree {
 			}
 			this.getChild(i).addChildren(childrenToAdd);
 		}
+	}
+	
+	public void setAlias(String alias){
+		this.alias = alias;
+	}
+	
+	public String getAlias(){
+		return this.alias;
 	}
 	
 	//display children of current tree node
