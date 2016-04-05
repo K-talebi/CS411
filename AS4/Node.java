@@ -7,6 +7,10 @@ public class Node{
 	String name = "";
 	String color = "";
 
+	enum name{
+		WA, NT, SA, Q, NSW, W, T;
+	}
+	
 	public Node (String name){
 		this.name = name;
 		domain.add("RED");
@@ -17,21 +21,18 @@ public class Node{
 	public Node(String name, String color){
 		this.name = name;
 		if(color == "RED"){
-			domain.add("GREEN");
-			domain.add("BLUE");
+			domain.add("RED");
 		}
 		else if(color == "GREEN"){
-			domain.add("RED");
-			domain.add("BLUE");
+			domain.add("GREEN");
 		}
 		else if(color == "BLUE"){
-			domain.add("RED");
-			domain.add("GREEN");
+			domain.add("BLUE");
 		}
 		this.color = color;
 	}
 
-	public void addConnected(Node a){
+	public void setConnected(Node a){
 		connected.add(a);
 		a.connected.add(this);
 	}
