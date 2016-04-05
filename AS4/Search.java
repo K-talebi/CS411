@@ -22,9 +22,10 @@ public class Search {
 
 	public boolean arcRevise(Node x, Node y){
 		boolean revised = false;
-		for(String color : y.getDomain()){
-			if(!x.canSatisfy(color)){
-				y.getDomain().remove(color);
+		for(String color : x.getDomain()){
+			/*WRONG*/
+			if(!y.canSatisfy(color)){
+				x.getDomain().remove(color);
 				revised = true;
 			}
 		}
@@ -32,3 +33,19 @@ public class Search {
 	}
 }
 
+/*
+ * input all nodes, make queue with each node of all connections
+ * while not empty{
+ * 		take element out of queue
+ * 		if(revise(current node, connected node) then{
+ * 			if size of domain of current node is = to 0 after the revision, 
+ * 			return false, not consistent
+ * 
+ * 			for each node connected to current, minus the element checked{
+ * 				add node connected?
+ * 			}
+ * 		}
+ * 
+ * }
+ * 
+ */
